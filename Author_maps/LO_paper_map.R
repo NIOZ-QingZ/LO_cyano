@@ -69,11 +69,13 @@ country_dict <- c(
   "Denmark" = "DK",
   "Spain" = "ES",
   "SPAIN" = "ES",
-  "Belgium" = "BE"
+  "Belgium" = "BE",
+  "Russia" = "RU",
+  "Antarctica" = "AQ"
 )
 
 not_countries <- c(
-  "Antarctica", "Baltic Sea", "Central Baltic Sea",
+  "Baltic Sea", "Central Baltic Sea",
   "Europe", "Global", "Northern Baltic Sea", "Siberia"
 )
 
@@ -121,7 +123,7 @@ ggplot() +
   )
 
 # 2. by percentage:
-ggplot() +
+map_percentage <- ggplot() +
   # base map (light gray, minimal borders)
   geom_sf(data = world, fill = "gray95", color = "gray80", size = 0.1) +
   
@@ -134,13 +136,49 @@ ggplot() +
   
   theme_minimal() +
   labs(
-    title = "Global Distribution of Articles by Country",
     fill = "Percentage (%)"
   ) +
   theme(
     panel.background = element_rect(fill = "white"),
     panel.grid = element_line(color = NA)   # remove grid
   )
+
+map_percentage
+
+# Save publication-ready figure (600 dpi, double-column width ~7.25 in)
+ggsave(
+  filename = "Fig_country_map.png",
+  plot     = map_percentage,
+  width    = 7.25,
+  height   = 4.0,
+  units    = "in",
+  dpi      = 600,
+  bg       = "white"
+)
+
+# --- Figure caption (with excluded-paper counts computed from the data) ------
+excluded_counts <- df_clean %>%
+  filter(`Country/Counties` %in% not_countries) %>%
+  group_by(`Country/Counties`) %>%
+  summarize(n = n_distinct(`Article number`), .groups = "drop")
+
+n_baltic <- excluded_counts %>%
+  filter(`Country/Counties` %in% c("Baltic Sea", "Central Baltic Sea", "Northern Baltic Sea")) %>%
+  pull(n) %>% sum()
+
+n_other <- excluded_counts %>%
+  filter(!`Country/Counties` %in% c("Baltic Sea", "Central Baltic Sea", "Northern Baltic Sea")) %>%
+  pull(n) %>% sum()
+
+n_excluded_total <- sum(excluded_counts$n)
+
+cat(paste0(
+  "Figure 3. Global distribution of the articles from the 1960s to the 2020s. ",
+  "Countries were identified based on study sites. ",
+  n_excluded_total, " article entries could not be assigned to a specific country and are excluded from the map: ",
+  n_baltic, " were associated with the Baltic Sea region (Baltic Sea, Central Baltic Sea, or Northern Baltic Sea), ",
+  "and ", n_other-1, " were tagged as Europe, or Global.\n"
+))
 
 
 library(tidyverse)
