@@ -102,12 +102,12 @@ world_joined <- world %>%
 
 # 1. by article count
 ggplot() +
-  # base map (light gray, minimal borders)
-  geom_sf(data = world, fill = "gray95", color = "gray80", size = 0.1) +
+  # base map (light gray, no borders)
+  geom_sf(data = world, fill = "gray95", color = NA) +
   
   # overlay countries with publications
   geom_sf(data = world_joined %>% filter(!is.na(article_count)),
-          aes(fill = article_count), color = "gray50", size = 0.2) +
+          aes(fill = article_count), color = NA) +
   
   # color scale
   scale_fill_viridis_c(option = "plasma", na.value = "gray95") +
@@ -124,12 +124,12 @@ ggplot() +
 
 # 2. by percentage:
 map_percentage <- ggplot() +
-  # base map (light gray, minimal borders)
-  geom_sf(data = world, fill = "gray95", color = "gray80", size = 0.1) +
+  # base map (light gray, no borders)
+  geom_sf(data = world, fill = "gray95", color = NA) +
   
   # overlay countries with publications
   geom_sf(data = world_joined %>% filter(!is.na(article_count)),
-          aes(fill = percentage), color = "gray50", size = 0.2) +
+          aes(fill = percentage), color = NA) +
   
   # color scale
   scale_fill_viridis_c(option = "plasma", na.value = "gray95") +
@@ -144,6 +144,10 @@ map_percentage <- ggplot() +
   )
 
 map_percentage
+
+geom_sf(data = world_joined %>% 
+          filter(!is.na(article_count), type != "Dependency"),
+        aes(fill = percentage), color = "black", size = 0.05)
 
 # Save publication-ready figure (600 dpi, double-column width ~7.25 in)
 ggsave(
